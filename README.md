@@ -20,12 +20,7 @@ MCP-сервер для чтения задачи Jira по ключу.
 
 ## Как подключить и использовать
 
-```bash
-npm install
-npm run build
-```
-
-Файл `.env`:
+Внутри своего проекта добавляем файл `.env` и заполняем:
 
 ```sh
 # меняем на свой домен
@@ -36,18 +31,18 @@ JIRA_TOKEN=personal-access-token
 
 `JIRA_TOKEN` — Personal Access Token Jira. Сервер отправляет его как `Authorization: Bearer`.
 
-Конфиг в `mcp.json`:
+Скачиваем архив с сервером, распаковываем в любую директорию, и прописываем путь до сервера в `mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "jira": {
       "command": "node",
-      "args": ["/ABS/PATH/jira-read-mcp/dist/index.js"],
+      "args": ["/ABS/PATH/jira-read-mcp/index.js"],
       "envFile": "/ABS/PATH/.env"
     }
   }
 }
 ```
 
-Сохрани конфиг, перезапусти MCP и вызови `read_task`.
+Сохраняем конфиг, и перезапускаем MCP.
