@@ -1,4 +1,5 @@
 node_modules/
 dist/
+jira-read-mcp/
 .env
 release/

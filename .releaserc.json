@@ -12,7 +12,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "node scripts/sync-version.mjs && npm run build && rm -rf release && mkdir -p release && zip -qr release/jira-read-mcp.zip dist"
+        "prepareCmd": "node scripts/sync-version.mjs && npm run build && rm -rf release jira-read-mcp && mkdir -p release && mv dist jira-read-mcp && zip -qr release/jira-read-mcp.zip jira-read-mcp && rm -rf jira-read-mcp"
       }
     ],
     [
