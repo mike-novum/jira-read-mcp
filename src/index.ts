@@ -9,7 +9,7 @@ async function main(): Promise<void> {
   const config = loadConfig();
   const server = new McpServer({
     name: "jira-read-mcp",
-    version: "1.0.1",
+    version: "1.0.2",
   });
 
   registerReadTask(server, config);
