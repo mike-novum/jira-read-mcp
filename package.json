@@ -2,12 +2,11 @@
   "name": "jira-read-mcp",
   "version": "1.0.1",
   "description": "MCP-сервер для чтения задач Jira",
-  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "build": "tsc",
+    "build": "tsc --noEmit && node scripts/build.mjs",
     "tsc": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
@@ -27,6 +26,7 @@
     "@semantic-release/npm": "^13.2.0",
     "@semantic-release/release-notes-generator": "^14.1.1",
     "@types/node": "^24.19.2",
+    "esbuild": "^0.28.2",
     "semantic-release": "^25.0.9",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
