@@ -24,7 +24,7 @@ MCP-сервер для чтения задачи Jira по ключу.
 
 ```sh
 # меняем на свой домен
-JIRA_BASE_URL=https://tracker.mycompany.ru
+JIRA_BASE_URL=https://tracker.mycompany.ru/jira
 # вставляем свой токен доступа
 JIRA_TOKEN=personal-access-token
 ```
