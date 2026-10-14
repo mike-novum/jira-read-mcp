@@ -8,7 +8,7 @@ import { registerReadTask } from "./tools/read-task.js";
 async function main(): Promise<void> {
   const config = loadConfig();
   const server = new McpServer({
-    name: "jira-mcp-server",
+    name: "jira-read-mcp",
     version: "1.0.0",
   });
 
