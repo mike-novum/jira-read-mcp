@@ -1,5 +1,5 @@
 import { CHARACTER_LIMIT } from "../constants.js";
-import type { JiraUser, TaskComment, TaskView } from "../types.js";
+import type { JiraUser, TaskComment, TaskLink, TaskParent, TaskView } from "../types.js";
 
 const BLOCK_TYPES = new Set([
   "doc",
@@ -45,10 +45,15 @@ export function renderTask(task: TaskView): string {
     `**Статус:** ${task.status}`,
     `**Исполнитель:** ${task.assignee}`,
     `**Автор:** ${task.reporter}`,
+    `**Родитель:** ${formatParent(task.parent)}`,
     "",
     "## Описание",
     "",
     task.description || "Описание отсутствует",
+    "",
+    "## Связи",
+    "",
+    ...renderLinks(task.links),
     "",
     "## Комментарии",
     "",
@@ -120,6 +125,26 @@ function applyMessage(view: TaskView, source: TaskView): TaskView {
         ? `Ответ обрезан: показано ${shown} из ${source.total_comments} комментариев. Уточни задачу, если нужны остальные.`
         : "Ответ обрезан по лимиту длины.",
   };
+}
+
+function formatParent(parent: TaskParent | null): string {
+  if (!parent) {
+    return "нет";
+  }
+
+  const summary = parent.summary ? ` — ${parent.summary}` : "";
+  return `${parent.key}${summary} (${parent.issue_type})`;
+}
+
+function renderLinks(links: TaskLink[]): string[] {
+  if (links.length === 0) {
+    return ["Связей нет"];
+  }
+
+  return links.map((link) => {
+    const summary = link.summary ? ` — ${link.summary}` : "";
+    return `- ${link.relation} ${link.key}${summary} (${link.issue_type})`;
+  });
 }
 
 function renderComment(comment: TaskComment): string[] {

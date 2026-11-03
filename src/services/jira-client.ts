@@ -11,6 +11,40 @@ const userSchema = z
   })
   .passthrough();
 
+const issueRefSchema = z
+  .object({
+    key: z.string(),
+    fields: z
+      .object({
+        summary: z.string().optional(),
+        issuetype: z
+          .object({
+            name: z.string().optional(),
+          })
+          .passthrough()
+          .nullable()
+          .optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+
+const issueLinkSchema = z
+  .object({
+    type: z
+      .object({
+        name: z.string().optional(),
+        inward: z.string().optional(),
+        outward: z.string().optional(),
+      })
+      .passthrough()
+      .optional(),
+    inwardIssue: issueRefSchema.optional(),
+    outwardIssue: issueRefSchema.optional(),
+  })
+  .passthrough();
+
 const issueSchema = z
   .object({
     key: z.string(),
@@ -27,6 +61,8 @@ const issueSchema = z
           .optional(),
         assignee: userSchema.nullable().optional(),
         reporter: userSchema.nullable().optional(),
+        parent: issueRefSchema.nullable().optional(),
+        issuelinks: z.array(issueLinkSchema).optional(),
       })
       .passthrough(),
   })
@@ -70,7 +106,7 @@ export class JiraClient {
 
   async getIssue(issueKey: string): Promise<JiraIssue> {
     return this.request(
-      `/rest/api/2/issue/${encodeURIComponent(issueKey)}?fields=summary,description,status,assignee,reporter`,
+      `/rest/api/2/issue/${encodeURIComponent(issueKey)}?fields=summary,description,status,assignee,reporter,parent,issuelinks`,
       issueSchema,
       issueKey,
     );

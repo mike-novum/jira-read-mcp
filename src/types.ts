@@ -4,6 +4,24 @@ export interface JiraUser {
   emailAddress?: string;
 }
 
+export interface JiraIssueRef {
+  key: string;
+  fields?: {
+    summary?: string;
+    issuetype?: { name?: string } | null;
+  };
+}
+
+export interface JiraIssueLink {
+  type?: {
+    name?: string;
+    inward?: string;
+    outward?: string;
+  };
+  inwardIssue?: JiraIssueRef;
+  outwardIssue?: JiraIssueRef;
+}
+
 export interface JiraIssue {
   key: string;
   fields: {
@@ -12,6 +30,8 @@ export interface JiraIssue {
     status?: { name?: string } | null;
     assignee?: JiraUser | null;
     reporter?: JiraUser | null;
+    parent?: JiraIssueRef | null;
+    issuelinks?: JiraIssueLink[];
   };
 }
 
@@ -34,6 +54,19 @@ export interface TaskComment {
   body: string;
 }
 
+export interface TaskParent {
+  key: string;
+  summary: string;
+  issue_type: string;
+}
+
+export interface TaskLink {
+  relation: string;
+  key: string;
+  summary: string;
+  issue_type: string;
+}
+
 export interface TaskView {
   key: string;
   summary: string;
@@ -41,6 +74,8 @@ export interface TaskView {
   status: string;
   assignee: string;
   reporter: string;
+  parent: TaskParent | null;
+  links: TaskLink[];
   comments: TaskComment[];
   total_comments: number;
   truncated: boolean;

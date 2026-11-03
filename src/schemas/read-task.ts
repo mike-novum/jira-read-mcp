@@ -18,6 +18,21 @@ export const readTaskOutputSchema = z
     status: z.string(),
     assignee: z.string(),
     reporter: z.string(),
+    parent: z
+      .object({
+        key: z.string(),
+        summary: z.string(),
+        issue_type: z.string().describe("Тип родителя: Epic, Story, Spike или другое имя типа в Jira"),
+      })
+      .nullable(),
+    links: z.array(
+      z.object({
+        relation: z.string().describe("Направленная связь, например blocks или is blocked by"),
+        key: z.string(),
+        summary: z.string(),
+        issue_type: z.string(),
+      }),
+    ),
     comments: z.array(
       z.object({
         author: z.string(),

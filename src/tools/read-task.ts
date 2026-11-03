@@ -4,7 +4,7 @@ import type { JiraConfig } from "../config.js";
 import { readTaskInputSchema, readTaskOutputSchema, type ReadTaskInput, type ReadTaskOutput } from "../schemas/read-task.js";
 import { formatCreated, formatUser, limitTask, renderTask, toPlainText } from "../services/format-task.js";
 import { JiraApiError, JiraClient } from "../services/jira-client.js";
-import type { JiraComment, JiraIssue, TaskView } from "../types.js";
+import type { JiraComment, JiraIssue, JiraIssueLink, JiraIssueRef, TaskLink, TaskParent, TaskView } from "../types.js";
 
 export function registerReadTask(server: McpServer, config: JiraConfig): void {
   const client = new JiraClient(config);
@@ -15,14 +15,17 @@ export function registerReadTask(server: McpServer, config: JiraConfig): void {
       title: "Прочитать задачу Jira",
       description: `Читает задачу Jira по ключу.
 
-Возвращает название, описание, статус, исполнителя, автора и комментарии.
+Возвращает название, описание, статус, исполнителя, автора, родителя, связи и комментарии.
+Родитель содержит ключ, название и тип задачи: Epic, Story, Spike или другое имя типа в Jira.
+Связи содержат направление, ключ, название и тип связанной задачи.
 Используй для ключей вида JIRA-ХХХХ или подобные.
 
 Args:
   - issue_key (string): ключ задачи
 
 Returns:
-  Текст задачи и структурированные поля key, summary, description, status, assignee, reporter, comments.
+  Текст задачи и структурированные поля key, summary, description, status, assignee, reporter, parent, links, comments.
+  parent равен null, если родителя нет. links — пустой массив, если связей нет.
   Если комментариев больше ${MAX_COMMENTS} или ответ длиннее лимита, лишняя часть отрезается и truncated=true.`,
       inputSchema: readTaskInputSchema,
       outputSchema: readTaskOutputSchema,
@@ -67,6 +70,8 @@ function toTaskView(key: string, fields: JiraIssue["fields"], comments: JiraComm
     status: fields.status?.name?.trim() || "не указан",
     assignee: formatUser(fields.assignee, "не назначен"),
     reporter: formatUser(fields.reporter, "не указан"),
+    parent: toParent(fields.parent),
+    links: toLinks(fields.issuelinks),
     comments: comments.map((comment) => ({
       author: formatUser(comment.author, "неизвестен"),
       created: formatCreated(comment.created),
@@ -74,6 +79,54 @@ function toTaskView(key: string, fields: JiraIssue["fields"], comments: JiraComm
     })),
     total_comments: total,
     truncated: total > comments.length,
+  };
+}
+
+function toParent(parent: JiraIssueRef | null | undefined): TaskParent | null {
+  const key = parent?.key?.trim();
+  if (!key) {
+    return null;
+  }
+
+  return {
+    key,
+    summary: parent?.fields?.summary?.trim() || "",
+    issue_type: parent?.fields?.issuetype?.name?.trim() || "не указан",
+  };
+}
+
+function toLinks(links: JiraIssueLink[] | undefined): TaskLink[] {
+  if (!links) {
+    return [];
+  }
+
+  const result: TaskLink[] = [];
+  for (const link of links) {
+    const outward = toLinkedIssue(link.outwardIssue, link.type?.outward || link.type?.name);
+    if (outward) {
+      result.push(outward);
+    }
+
+    const inward = toLinkedIssue(link.inwardIssue, link.type?.inward || link.type?.name);
+    if (inward) {
+      result.push(inward);
+    }
+  }
+
+  return result;
+}
+
+function toLinkedIssue(issue: JiraIssueRef | undefined, relation: string | undefined): TaskLink | null {
+  const key = issue?.key?.trim();
+  if (!key) {
+    return null;
+  }
+
+  return {
+    relation: relation?.trim() || "связана с",
+    key,
+    summary: issue?.fields?.summary?.trim() || "",
+    issue_type: issue?.fields?.issuetype?.name?.trim() || "не указан",
   };
 }
 
@@ -85,6 +138,8 @@ function toOutput(task: TaskView): ReadTaskOutput {
     status: task.status,
     assignee: task.assignee,
     reporter: task.reporter,
+    parent: task.parent,
+    links: task.links,
     comments: task.comments,
     total_comments: task.total_comments,
     truncated: task.truncated,
